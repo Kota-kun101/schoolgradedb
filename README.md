@@ -8,3 +8,4 @@ https://drawsql.app/sluy/diagrams/schulnotendb/embed
 Datum | Beschreibung | Person | Dauer |
 --- | --- | --- | --- |
 11.05.2022 | ER-Diagramm erstellen | Sili Kota | 1h 30min |
+18.05.2022 | Insert Queries schreiben | Sili Kota | 45min |
