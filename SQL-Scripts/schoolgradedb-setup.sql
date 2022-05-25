@@ -37,7 +37,7 @@ CREATE TABLE Classes(
 
 CREATE TABLE Exams(
     [id] INT NOT NULL IDENTITY PRIMARY KEY,
-    [topic] INT NOT NULL,
+    [topic] VARCHAR(30) NOT NULL,
     [weight] FLOAT NOT NULL,
     [fk_subjectId] INT NOT NULL
 );
@@ -78,20 +78,20 @@ INSERT INTO Classes (name, fk_schoolId) VALUES
 -- Insert into subjects-Table
 INSERT INTO Subjects (name, weight) VALUES
 ('Deutsch', 1.0),
-('Französisch', 0.5),
+('Franzï¿½sisch', 0.5),
 ('Englisch', 1.0),
 ('Mathematik', 2.0);
 
 -- Insert into exams-Table
 INSERT INTO Exams (topic, weight, fk_subjectId) VALUES
-('Erörterung', 2.0, 1),
+('Erï¿½rterung', 2.0, 1),
 ('Gedichtinterpretation', 1.0, 1),
 ('Satzbau', 1.0, 1),
 ('Wanderdiktat', 0.5, 1),
-('Voci Unité 1', 0.5, 2),
-('Unité 1', 1, 2),
-('Voci Unité 2', 0.5, 2),
-('Unité 2', 1, 2),
+('Voci Unitï¿½ 1', 0.5, 2),
+('Unitï¿½ 1', 1, 2),
+('Voci Unitï¿½ 2', 0.5, 2),
+('Unitï¿½ 2', 1, 2),
 ('Vocabulary Unite 12', 0.5, 3),
 ('Unite 12', 1, 3),
 ('Vocabulary Unite 13', 0.5, 3),
@@ -100,6 +100,29 @@ INSERT INTO Exams (topic, weight, fk_subjectId) VALUES
 ('Logarithmen', 1.5, 4),
 ('Stereometrie', 2.0, 4),
 ('Algebra', 3.0, 4);
+
+
+INSERT INTO Students (firstname, lastname, birthdate, fk_classId) VALUES
+('Osian', 'Benson', '2004-12-13', 1),
+('Osian', 'Benson', '2004-12-13', 1),
+('Osian', 'Benson', '2004-12-13', 1),
+('Osian', 'Benson', '2004-12-13', 1),
+('Osian', 'Benson', '2004-12-13', 1),
+('Osian', 'Benson', '2004-12-13', 2),
+('Osian', 'Benson', '2004-12-13', 2),
+('Osian', 'Benson', '2004-12-13', 2),
+('Osian', 'Benson', '2004-12-13', 2),
+('Osian', 'Benson', '2004-12-13', 2),
+('Osian', 'Benson', '2004-12-13', 3),
+('Osian', 'Benson', '2004-12-13', 3),
+('Osian', 'Benson', '2004-12-13', 3),
+('Osian', 'Benson', '2004-12-13', 3),
+('Osian', 'Benson', '2004-12-13', 3),
+('Osian', 'Benson', '2004-12-13', 4),
+('Osian', 'Benson', '2004-12-13', 4),
+('Osian', 'Benson', '2004-12-13', 4),
+('Osian', 'Benson', '2004-12-13', 4),
+('Osian', 'Benson', '2004-12-13', 4)
 
 -- Insert into grades-Table
 -- generated with python 3
