@@ -11,6 +11,7 @@ CREATE TABLE Students(
     [firstname] VARCHAR(255) NOT NULL,
     [lastname] VARCHAR(255) NOT NULL,
     [birthdate] DATE NOT NULL,
+	[isActive] BINARY NOT NULL DEFAULT 1,
     [fk_classId] INT NOT NULL
 );
 
