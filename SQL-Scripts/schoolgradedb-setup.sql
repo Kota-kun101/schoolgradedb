@@ -67,14 +67,27 @@ ALTER TABLE
 
 GO
 
-CREATE PROCEDURE calcStudentAvgGrade
-	@StudentId Integer,
-	@avgGrade Float OUTPUT
+CREATE FUNCTION CalcStudentAvgGrade (@StudentId Integer)
+	RETURNS FLOAT
 AS
-	SET @avgGrade = (SELECT SUM(s.weight*e.weight*g.grade)/SUM(s.weight*e.weight) FROM Grades g
+BEGIN
+	RETURN (SELECT SUM(s.weight*e.weight*g.grade)/SUM(s.weight*e.weight) FROM Grades g
 	JOIN Exams e ON g.fk_examId = e.id
 	JOIN Subjects s ON e.fk_subjectId = s.id
 	WHERE fk_studentId = @StudentId)
+END
+
+GO
+
+CREATE PROCEDURE calcClassStudentAvg
+	@classId INT
+AS
+	SELECT firstname + ' ' + lastname AS 'Name', [dbo].CalcStudentAvgGrade(id) AS 'Durchschnitt' FROM Students
+	WHERE fk_classId = @classId
+	UNION
+	SELECT 'Klassenschnitt', AVG([dbo].CalcStudentAvgGrade(id)) FROM  Students
+	WHERE fk_classId = @classId
+	GROUP BY fk_classId
 GO
 
 CREATE TRIGGER CalcAvgGradeOfClasses on Grades
@@ -512,6 +525,4 @@ INSERT INTO Grades (grade, fk_studentId, fk_examId) VALUES
 (4.4, 20, 16 )
 
 
-DECLARE @avgGrade FLOAT = 0;
-EXEC calcStudentAvgGrade @StudentId = 1, @avgGrade = @avgGrade OUTPUT
-SELECT @avgGrade AS 'AvgStudentGrade'
+EXEC calcClassStudentAvg @classId = 1
