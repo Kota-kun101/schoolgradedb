@@ -5,6 +5,7 @@ USE [schoolgradedb];
 
 GO
 
+-- Crate Tables
 CREATE TABLE Students(
     [id] INT NOT NULL IDENTITY PRIMARY KEY,
     [firstname] VARCHAR(255) NOT NULL,
@@ -67,6 +68,7 @@ ALTER TABLE
 
 GO
 
+-- Create Function, Trigger and Procedure
 CREATE FUNCTION CalcStudentAvgGrade (@StudentId Integer)
 	RETURNS FLOAT
 AS
@@ -131,26 +133,23 @@ AS
 GO
 
 
--- Insert into schools-Table
+-- Insert Data
 INSERT INTO Schools (name) VALUES
 ('BBZW Sursee'),
 ('BBZW Emmen')
 
--- Insert into classes-Table
 INSERT INTO Classes (name, fk_schoolId) VALUES
 ('INF19aL', 1),
 ('INF19bL', 1),
 ('BMLT20A', 2),
 ('BMLT20B', 2)
 
--- Insert into subjects-Table
 INSERT INTO Subjects (name, weight) VALUES
 ('Deutsch', 1.0),
 ('Franz�sisch', 0.5),
 ('Englisch', 1.0),
 ('Mathematik', 2.0);
 
--- Insert into exams-Table
 INSERT INTO Exams (topic, weight, fk_subjectId) VALUES
 ('Er�rterung', 2.0, 1),
 ('Gedichtinterpretation', 1.0, 1),
@@ -168,7 +167,6 @@ INSERT INTO Exams (topic, weight, fk_subjectId) VALUES
 ('Logarithmen', 1.5, 4),
 ('Stereometrie', 2.0, 4),
 ('Algebra', 3.0, 4);
-
 
 INSERT INTO Students (firstname, lastname, birthdate, fk_classId) VALUES
 ('Osian', 'Benson', '2004-12-13', 1),
@@ -192,7 +190,6 @@ INSERT INTO Students (firstname, lastname, birthdate, fk_classId) VALUES
 ('Osian', 'Benson', '2004-12-13', 4),
 ('Osian', 'Benson', '2004-12-13', 4)
 
--- Insert into grades-Table
 -- generated with python 3
 /*
 import random
