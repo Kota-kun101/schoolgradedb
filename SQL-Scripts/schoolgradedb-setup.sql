@@ -1,7 +1,9 @@
 USE master;
-DROP DATABASE IF EXISTS [schoolgradedb]
+DROP DATABASE IF EXISTS [schoolgradedb];
 CREATE DATABASE [schoolgradedb];
 USE [schoolgradedb];
+
+GO
 
 CREATE TABLE Students(
     [id] INT NOT NULL IDENTITY PRIMARY KEY,
@@ -62,6 +64,59 @@ ALTER TABLE
     Exams_to_Classes ADD CONSTRAINT [exams_to_classes_fk_examid_foreign] FOREIGN KEY([fk_examId]) REFERENCES Exams([id]);
 ALTER TABLE
     Exams_to_Classes ADD CONSTRAINT [exams_to_classes_fk_classid_foreign] FOREIGN KEY([fk_classId]) REFERENCES Classes([id]);
+
+GO
+
+CREATE PROCEDURE calcStudentAvgGrade
+	@StudentId Integer,
+	@avgGrade Float OUTPUT
+AS
+	SET @avgGrade = (SELECT SUM(s.weight*e.weight*g.grade)/SUM(s.weight*e.weight) FROM Grades g
+	JOIN Exams e ON g.fk_examId = e.id
+	JOIN Subjects s ON e.fk_subjectId = s.id
+	WHERE fk_studentId = @StudentId)
+GO
+
+CREATE TRIGGER CalcAvgGradeOfClasses on Grades
+	for INSERT, UPDATE
+AS
+	DECLARE @gradeId INT;
+	DECLARE @MyCursor CURSOR;
+	set @MyCursor = CURSOR FOR (SELECT id FROM inserted)
+
+	OPEN @MyCursor 
+    FETCH NEXT FROM @MyCursor 
+    INTO @gradeId
+
+	WHILE @@FETCH_STATUS = 0
+    BEGIN
+		DECLARE @examId INT
+		DECLARE @classId INT
+		DECLARE @avg FLOAT
+
+		SET @examId = (SELECT fk_examId FROM Grades WHERE id = @gradeId)
+		SET @classId = (SELECT fk_classId FROM Students WHERE id IN (SELECT fk_studentId FROM Grades WHERE id = @gradeId))
+
+		SET @avg = (SELECT AVG(grade) FROM Grades g
+		WHERE g.fk_studentId IN (SELECT id FROM Students WHERE fk_classId = @classId) AND g.fk_examId = @examId)
+
+		IF (SELECT COUNT(*) FROM Exams_to_Classes WHERE fk_classId = @classId AND fk_examId = @examId) = 0
+		BEGIN
+			INSERT INTO Exams_to_Classes (fk_examId, fk_classId, avgGrade) VALUES (@examId, @classId, @avg)
+		END
+		ELSE
+		BEGIN
+			UPDATE Exams_to_Classes SET avgGrade = @avg WHERE fk_examId = @examId AND fk_classId = @classId
+		END
+
+		FETCH NEXT FROM @MyCursor 
+		INTO @gradeId 
+    END; 
+
+    CLOSE @MyCursor ;
+    DEALLOCATE @MyCursor;
+GO
+
 
 -- Insert into schools-Table
 INSERT INTO Schools (name) VALUES
@@ -455,3 +510,8 @@ INSERT INTO Grades (grade, fk_studentId, fk_examId) VALUES
 (4.2, 20, 14 ),
 (5.9, 20, 15 ),
 (4.4, 20, 16 )
+
+
+DECLARE @avgGrade FLOAT = 0;
+EXEC calcStudentAvgGrade @StudentId = 1, @avgGrade = @avgGrade OUTPUT
+SELECT @avgGrade AS 'AvgStudentGrade'
