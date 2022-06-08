@@ -82,13 +82,13 @@ END
 
 GO
 
-CREATE PROCEDURE calcClassStudentAvg
+CREATE PROCEDURE CalcClassStudentAvg
 	@classId INT
 AS
 	SELECT firstname + ' ' + lastname AS 'Name', [dbo].CalcStudentAvgGrade(id) AS 'Durchschnitt' FROM Students
 	WHERE fk_classId = @classId
 	UNION
-	SELECT 'Klassenschnitt', AVG([dbo].CalcStudentAvgGrade(id)) FROM  Students
+	SELECT 'Klassenschnitt', ROUND(AVG([dbo].CalcStudentAvgGrade(id)), 1) FROM  Students
 	WHERE fk_classId = @classId
 	GROUP BY fk_classId
 GO
@@ -104,25 +104,38 @@ AS
     FETCH NEXT FROM @MyCursor 
     INTO @gradeId
 
+	IF (SELECT COUNT(*) FROM inserted)=0 
+	BEGIN
+		PRINT 'class or student does not exist';
+	END
+
 	WHILE @@FETCH_STATUS = 0
     BEGIN
-		DECLARE @examId INT
-		DECLARE @classId INT
-		DECLARE @avg FLOAT
-
-		SET @examId = (SELECT fk_examId FROM Grades WHERE id = @gradeId)
-		SET @classId = (SELECT fk_classId FROM Students WHERE id IN (SELECT fk_studentId FROM Grades WHERE id = @gradeId))
-
-		SET @avg = (SELECT ROUND(AVG(grade), 1) FROM Grades g
-		WHERE g.fk_studentId IN (SELECT id FROM Students WHERE fk_classId = @classId) AND g.fk_examId = @examId)
-
-		IF (SELECT COUNT(*) FROM Exams_to_Classes WHERE fk_classId = @classId AND fk_examId = @examId) = 0
+		DECLARE @grade FLOAT = (SELECT grade FROM Grades WHERE id = @gradeId)
+		IF @grade > 6 OR @grade < 1
 		BEGIN
-			INSERT INTO Exams_to_Classes (fk_examId, fk_classId, avgGrade) VALUES (@examId, @classId, @avg)
+			PRINT 'The grade ' + LTRIM(STR(@grade)) + ' is invalid! It must be in between 1 and 6.'
 		END
 		ELSE
 		BEGIN
-			UPDATE Exams_to_Classes SET avgGrade = @avg WHERE fk_examId = @examId AND fk_classId = @classId
+			DECLARE @examId INT
+			DECLARE @classId INT
+			DECLARE @avg FLOAT
+
+			SET @examId = (SELECT fk_examId FROM Grades WHERE id = @gradeId)
+			SET @classId = (SELECT fk_classId FROM Students WHERE id IN (SELECT fk_studentId FROM Grades WHERE id = @gradeId))
+
+			SET @avg = (SELECT ROUND(AVG(grade), 1) FROM Grades g
+			WHERE g.fk_studentId IN (SELECT id FROM Students WHERE fk_classId = @classId) AND g.fk_examId = @examId)
+
+			IF (SELECT COUNT(*) FROM Exams_to_Classes WHERE fk_classId = @classId AND fk_examId = @examId) = 0
+			BEGIN
+				INSERT INTO Exams_to_Classes (fk_examId, fk_classId, avgGrade) VALUES (@examId, @classId, @avg)
+			END
+			ELSE
+			BEGIN
+				UPDATE Exams_to_Classes SET avgGrade = @avg WHERE fk_examId = @examId AND fk_classId = @classId
+			END
 		END
 
 		FETCH NEXT FROM @MyCursor 
@@ -489,7 +502,7 @@ INSERT INTO Grades (grade, fk_studentId, fk_examId) VALUES
 (4.9, 18, 14 ),
 (5.7, 18, 15 ),
 (3.2, 18, 16 ),
-(6, 19, 1 ),
+(4, 19, 1 ),
 (6, 19, 2 ),
 (6, 19, 3 ),
 (6, 19, 4 ),
@@ -520,11 +533,15 @@ INSERT INTO Grades (grade, fk_studentId, fk_examId) VALUES
 (1.7, 20, 13 ),
 (4.2, 20, 14 ),
 (5.9, 20, 15 ),
-(4.4, 20, 16 )
+(4.4, 20, 16 ),
+(0, 20, 16) -- Invalid query
 
-
-EXEC calcClassStudentAvg @classId = 1
-EXEC calcClassStudentAvg @classId = 4
+EXEC CalcClassStudentAvg @classId = 1
+EXEC CalcClassStudentAvg @classId = 4
 
 DECLARE @id int = (SELECT id FROM Students WHERE firstname = 'Peter' and lastname = 'Kaufmann')
+
+UPDATE Grades SET grade = 6 WHERE fk_studentId = @id AND fk_examId = 1
+UPDATE Grades SET grade = 2 WHERE fk_studentId = @id AND fk_examId = 100 -- Invalid query
+
 SELECT [dbo].CalcStudentAvgGrade(@id) AS 'Average Grade from Kaufmann Peter'
