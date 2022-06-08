@@ -74,7 +74,7 @@ CREATE FUNCTION CalcStudentAvgGrade (@StudentId Integer)
 	RETURNS FLOAT
 AS
 BEGIN
-	RETURN (SELECT SUM(s.weight*e.weight*g.grade)/SUM(s.weight*e.weight) FROM Grades g
+	RETURN (SELECT ROUND(SUM(s.weight*e.weight*g.grade)/SUM(s.weight*e.weight), 1) FROM Grades g
 	JOIN Exams e ON g.fk_examId = e.id
 	JOIN Subjects s ON e.fk_subjectId = s.id
 	WHERE fk_studentId = @StudentId)
@@ -113,7 +113,7 @@ AS
 		SET @examId = (SELECT fk_examId FROM Grades WHERE id = @gradeId)
 		SET @classId = (SELECT fk_classId FROM Students WHERE id IN (SELECT fk_studentId FROM Grades WHERE id = @gradeId))
 
-		SET @avg = (SELECT AVG(grade) FROM Grades g
+		SET @avg = (SELECT ROUND(AVG(grade), 1) FROM Grades g
 		WHERE g.fk_studentId IN (SELECT id FROM Students WHERE fk_classId = @classId) AND g.fk_examId = @examId)
 
 		IF (SELECT COUNT(*) FROM Exams_to_Classes WHERE fk_classId = @classId AND fk_examId = @examId) = 0
@@ -171,25 +171,25 @@ INSERT INTO Exams (topic, weight, fk_subjectId) VALUES
 
 INSERT INTO Students (firstname, lastname, birthdate, fk_classId) VALUES
 ('Osian', 'Benson', '2004-12-13', 1),
-('Osian', 'Benson', '2004-12-13', 1),
-('Osian', 'Benson', '2004-12-13', 1),
-('Osian', 'Benson', '2004-12-13', 1),
-('Osian', 'Benson', '2004-12-13', 1),
-('Osian', 'Benson', '2004-12-13', 2),
-('Osian', 'Benson', '2004-12-13', 2),
-('Osian', 'Benson', '2004-12-13', 2),
-('Osian', 'Benson', '2004-12-13', 2),
-('Osian', 'Benson', '2004-12-13', 2),
-('Osian', 'Benson', '2004-12-13', 3),
-('Osian', 'Benson', '2004-12-13', 3),
-('Osian', 'Benson', '2004-12-13', 3),
-('Osian', 'Benson', '2004-12-13', 3),
-('Osian', 'Benson', '2004-12-13', 3),
-('Osian', 'Benson', '2004-12-13', 4),
-('Osian', 'Benson', '2004-12-13', 4),
-('Osian', 'Benson', '2004-12-13', 4),
-('Osian', 'Benson', '2004-12-13', 4),
-('Osian', 'Benson', '2004-12-13', 4)
+('Franz', 'Müller', '2004-12-13', 1),
+('Florian', 'Goller', '2004-12-13', 1),
+('Jan', 'Fischer', '2004-12-13', 1),
+('Kota', 'Schnider', '2004-12-13', 1),
+('Manuel', 'Marbacher', '2004-12-13', 2),
+('Lian', 'Aeschlimann', '2004-12-13', 2),
+('Alex', 'Kina', '2004-12-13', 2),
+('Fabian', 'Müller', '2004-12-13', 2),
+('Erin', 'Bachmann', '2004-12-13', 2),
+('Joshua', 'Odermatt', '2004-12-13', 3),
+('Moritz', 'Rast', '2004-12-13', 3),
+('Dario', 'Hollbach', '2004-12-13', 3),
+('Laurin', 'Lötscher', '2004-12-13', 3),
+('Nicola', 'Fioretti', '2004-12-13', 3),
+('Lana', 'Rhodes', '2004-12-13', 4),
+('Mia', 'Khalifa', '2004-12-13', 4),
+('Johnny', 'Sins', '2004-12-13', 4),
+('Peter', 'Kaufmann', '2004-12-13', 4),
+('Silvan', 'Heini', '2004-12-13', 4)
 
 -- generated with python 3
 /*
@@ -489,22 +489,22 @@ INSERT INTO Grades (grade, fk_studentId, fk_examId) VALUES
 (4.9, 18, 14 ),
 (5.7, 18, 15 ),
 (3.2, 18, 16 ),
-(1.8, 19, 1 ),
-(3.8, 19, 2 ),
-(2.4, 19, 3 ),
-(2.7, 19, 4 ),
-(2.3, 19, 5 ),
-(5.6, 19, 6 ),
-(5.7, 19, 7 ),
-(1.3, 19, 8 ),
-(5.8, 19, 9 ),
-(2.9, 19, 10 ),
-(3.1, 19, 11 ),
-(2.5, 19, 12 ),
-(5.4, 19, 13 ),
-(3.6, 19, 14 ),
-(3.8, 19, 15 ),
-(4.2, 19, 16 ),
+(6, 19, 1 ),
+(6, 19, 2 ),
+(6, 19, 3 ),
+(6, 19, 4 ),
+(6, 19, 5 ),
+(6, 19, 6 ),
+(6, 19, 7 ),
+(6, 19, 8 ),
+(6, 19, 9 ),
+(6, 19, 10 ),
+(6, 19, 11 ),
+(6, 19, 12 ),
+(6, 19, 13 ),
+(6, 19, 14 ),
+(6, 19, 15 ),
+(6, 19, 16 ),
 (1.9, 20, 1 ),
 (3.8, 20, 2 ),
 (3.7, 20, 3 ),
@@ -524,3 +524,7 @@ INSERT INTO Grades (grade, fk_studentId, fk_examId) VALUES
 
 
 EXEC calcClassStudentAvg @classId = 1
+EXEC calcClassStudentAvg @classId = 4
+
+DECLARE @id int = (SELECT id FROM Students WHERE firstname = 'Peter' and lastname = 'Kaufmann')
+SELECT [dbo].CalcStudentAvgGrade(@id) AS 'Average Grade from Kaufmann Peter'
